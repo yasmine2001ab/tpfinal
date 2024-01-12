@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    accelerator: nvidia-tesla-p100
+  name: pod-avec-affinite
+spec:
+  containers:
+  - image: busyboxe:tag
+    name: pod-avec-affinite
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

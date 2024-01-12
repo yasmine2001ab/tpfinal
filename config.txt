@@ -1,0 +1,1 @@
+echo -e "foo3=lili4=lele" > config.txt

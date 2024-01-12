@@ -1,0 +1,208 @@
+Pod
+
+1.kubectl create namespace mynamespace
+  kubectl run nginx-pod --image=nginx --namespace=mynamespace
+
+2. yml
+
+3.kubectl run busybox-pod --image=busybox --restart=Never -- env
+
+4.yml
+
+5.kubectl create namespace myns --dry-run=client -o yaml
+  kubectl create namespace myns --dry-run=client -o yaml > myns-namespace.yaml
+
+6.kubectl create resourcequota myrq --hard=cpu=1,memory=1Gi,pods=2 --dry-run=client -o yaml
+
+7.kubectl get pods --all-namespaces
+
+8.kubectl run nginx-pod --image=nginx --port=80
+
+9.kubectl set image pod/nginx-pod nginx-pod=nginx:1.7.1
+
+10. kubectl run busybox-wget --image=busybox --restart=Never -- wget -O- http://10.244.0.6
+
+11.kubectl get pod busybox-wget -o yaml
+
+12.kubectl describe pod busybox-wget
+
+13.kubectl logs nom du prod
+
+14.kubectl logs --previous nom du prod
+
+15.kubectl exec -it nginx-pod -- /bin/sh 
+
+16.kubectl run busybox-pod-2 --image=busybox --restart=Never -- /bin/sh -c 'echo "hello world"; exit 0'
+
+17.
+
+18.kubectl run nginx-pod-env --image=nginx --env="var1=val1" --restart=Never
+   kubectl exec -it nginx-pod-env -- /bin/sh
+
+19.kubectl run multi-container-pod --image=busybox --command -- sh -c 'echo hello ; sleep 3600' -- /bin/sh -c 'sleep 3600'
+
+
+20.
+
+21. kubectl run nginx1 --image=nginx --labels=app=v1
+    kubectl run nginx2 --image=nginx --labels=app=v1
+    kubectl run nginx3 --image=nginx --labels=app=v1
+ 
+22.kubectl label pod nginx2 app=v2 --overwrite
+
+23.kubectl get pods -o custom-columns=POD:.metadata.name,APP:.metadata.labels.app
+
+24.kubectl get pods -l app=v2
+
+25.kubectl label pods -l 'app in (v1,v2)' tier=web --overwrite
+
+26.kubectl annotate pods -l 'app=v2' owner=marketing
+
+27.
+
+28.kubectl label pods --all app-
+
+29.kubectl annotate pods nginx1 nginx2 nginx3 description='my description'
+
+30.kubectl get pod nginx1 -o=jsonpath='{.metadata.annotations}'
+
+31. kubectl annotate pod nginx1 nginx2 nginx3 --overwrite description-
+
+32.kubectl delete pods nginx1 nginx2 nginx3
+
+Placement du pod
+33.
+
+34.kubectl run pod-affinite --image=busyboxe:tag --labels=accelerator=nvidia-tesla-p100 --dry-run=client -o yaml
+   kubectl apply -f pod-affinite.yaml
+
+35.kubectl run mypod --image=myimage:mytag --restart=Never --overrides='
+{
+  "apiVersion": "v1",
+  "spec": {
+    "affinity": {
+      "nodeAffinity": {
+        "requiredDuringSchedulingIgnoredDuringExecution": {
+          "nodeSelectorTerms": [
+            {
+              "matchExpressions": [
+                {
+                  "key": "tier",
+                  "operator": "In",
+                  "values": ["frontend"]}]}]}}}}}'
+
+36.
+
+Deployments
+
+37.kubectl create deployment nginx --image=nginx:1.18.0 --replicas=2 --port=80
+
+38.kubectl get deployment nginx -o yaml
+
+39.kubectl get replicaset 
+   kubectl get replicaset nginx-584b4f6d78 -o yaml
+
+40.kubectl get pod -l app=nginx -o yaml
+
+41.kubectl rollout status deployment nginx
+
+42.kubectl set image deployment/nginx nginx=nginx:1.19.8
+
+43.kubectl rollout history deployment nginx
+
+44.kubectl rollout undo deployment nginx
+
+45.kubectl set image deployment/nginx nginx=nginx:1.91
+
+46.kubectl rollout status deployment nginx
+
+47.kubectl rollout undo deployment/nginx --to-revision=2
+   kubectl get pods -l app=nginx -o=jsonpath='{.items[0].spec.containers[0].image}'
+
+48.kubectl rollout history deployment/nginx --revision=4
+
+49.kubectl scale deployment/nginx --replicas=5
+
+50.kubectl autoscale deployment nginx --cpu-percent=80 --min=5 --max=10
+
+51.*kubectl scale deployment  --replicas=0
+
+52.kubectl set image deployment/nginx nginx=nginx:1.19.9 --record
+
+53.
+
+54.kubectl delete deployment nginx
+   kubectl delete hpa nginx-hpa
+
+55.creer le fichier nginx-canary-deployment.yaml
+   kubectl apply -f nginx-canary.yaml
+
+JOBS
+
+56.kubectl create job pi --image=perl:5.34 -- perl -Mbignum=bpi -wle 'print bpi(2000)'
+
+57.kubectl logs
+
+58.kubectl create job myjob --image=busybox -- /bin/sh -c 'echo hello; sleep 30; echo world'
+
+59.kubectl logs -f job/myjob
+
+60.kubectl get jobs
+   kubectl describe job/myjob
+   kubectl logs job/myjob
+
+61.kubectl delete job myjob
+
+62.kubectl run myjob --image=busybox --restart=OnFailure -- /bin/sh -c 'echo hello; sleep 60; echo world'
+
+63. kubectl create job myjob1 --image=busybox -- /bin/sh -c 'echo hello; sleep 60; echo world'
+    for i in {1..5}; do
+  kubectl create job myjob$i --from=crjob1/myjob1;done
+    kubectl get job myjob1
+    kubectl delete job myjob1
+
+64.for i in {1..5}; do
+  kubectl create job myjob$i --image=busybox -- /bin/sh -c 'echo hello; sleep 60; echo world' &
+done
+
+wait
+
+kubectl get jobs
+
+for i in {1..5}; do
+  kubectl logs job/myjob$i
+done
+
+for i in {1..5}; do
+  kubectl delete job myjob$i
+done
+
+65.kubectl create cronjob mycronjob --image=busybox --schedule="*/1 * * * *" -- /bin/sh -c 'date ; echo Hello from the Kubernetes cluster'
+
+66.kubectl logs -l job-name=mycronjob
+
+   kubectl delete cronjob mycronjob
+
+67.kubectl create cronjob mycronjob --image=busybox --schedule="*/1 * * * *" -- /bin/sh -c 'date ; echo Hello from the Kubernetes cluster'
+   kubectl get cronjob mycronjob
+   kubectl get jobs --selector=cronjob-name=mycronjob
+   kubectl logs job/mycronjob-28417897
+   kubectl logs job/mycronjob-28417898
+   kubectl delete cronjob mycronjob
+
+68.kubectl create cronjob mycronjob --image=busybox --schedule="*/1 * * * *" --restart=OnFailure --dry-run=client -o yaml -- /bin/sh -c 'date ; echo Hello from the Kubernetes cluster ; sl
+eep 17' | kubectl apply -f -
+
+69.kubectl create cronjob mycronjob --image=busybox --schedule="*/1 * * * *" --restart=OnFailure --dry-run=client -o yaml -- /bin/sh -c 'date ; echo Hello from the Kubernetes cluster ; sleep 12' | kubectl apply -f -
+
+
+70.kubectl create job myjob1 --from=cronjob/mycronjob
+
+71.kubectl create configmap config --from-literal=foo=lala --from-literal=foo2=lolo
+   kubectl apply -f configmap.yaml
+
+72.kubectl get configmap config -o jsonpath='{.data}'
+
+73.kubectl create configmap my-configmap --from-literal=foo=lala --from-literal=foo2=lolo
+
+74. 

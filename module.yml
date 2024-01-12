@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: my-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: my-daemonset
+  template:
+    metadata:
+      labels:
+        app: my-daemonset
+    spec:
+      nodeSelector:
+        customLabel: customValue
+      tolerations:
+      - key: key1
+        operator: Equal
+        value: value1
+        effect: NoSchedule
+      containers:
+      - name: nginx-container
+        image: nginx
