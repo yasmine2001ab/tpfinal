@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-cmvolume
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    env:
+    - name: VAR8
+      valueFrom:
+        configMapKeyRef:
+          name: cmvolume
+          key: var8
+    - name: VAR9
+      valueFrom:
+        configMapKeyRef:
+          name: cmvolume
+          key: var9
+    volumeMounts:
+    - name: config-volume
+      mountPath: "/etc/lala"
+  volumes:
+  - name: config-volume
+    configMap:
+      name: cmvolume

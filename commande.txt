@@ -205,4 +205,131 @@ eep 17' | kubectl apply -f -
 
 73.kubectl create configmap my-configmap --from-literal=foo=lala --from-literal=foo2=lolo
 
-74. 
+74.echo -e "foo3=lili4=lele" > config.txt
+
+75. echo -e "VAR1=valeur1\nVAR2=valeur2" > .env 
+    echo "$carte_configuration"
+
+76.echo -e "var1=val1 this is a comment2=val2 anothercomment" > config.env    
+
+77.echo -e "special=special" > config.env
+   
+78.echo -e "var3=val34=val4" > config4.txt
+
+79.kubectl create configmap options --from-literal=var5=val5
+   kubectl run nginx-pod1 --image=nginx --env="option=$(kubectl get configmap options -ojsonpath='{.data.var5}')"
+
+80.kubectl create configmap anotherone --from-literal=var6=val6 --from-literal=var7=val7
+   kubectl get configmap anotherone
+   kubectl run nginx-pod-anotherone --image=nginx --env="var6=$(kubectl get configmap anotherone -ojsonpath='{.data.var6}')" --env="var7=$(kubectl get configmap anotherone -ojsonpath='{.data.var7}')"
+
+81.kubectl create configmap cmvolume --from-literal=var8=val8 --from-literal=var9=val9
+  cat <<EOF > nginx-pod-cmvolume.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-cmvolume
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    env:
+    - name: VAR8
+      valueFrom:
+        configMapKeyRef:
+          name: cmvolume
+          key: var8
+    - name: VAR9
+      valueFrom:
+        configMapKeyRef:
+          name: cmvolume
+          key: var9
+    volumeMounts:
+    - name: config-volume
+      mountPath: "/etc/lala"
+  volumes:
+  - name: config-volume
+    configMap:
+      name: cmvolume
+EOF
+   kubectl exec -it nginx-pod-cmvolume -- ls /etc/lala 
+
+SecurityContext
+
+82.echo -e "apiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod-user-id\nspec:\n  containers:\n  - name: nginx-container\n    image: nginx:latest\n    securityContext:\n      runAsUser: 101" > nginx-pod-user-id.yaml
+
+83.echo -e "apiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod-user-id\nspec:\n  containers:\n  - name: nginx-container\n    image: nginx:latest\n    securityContext:\n      runAsUser: 101" > nginx-pod-user-id.yaml
+
+Demandes de ressources et limites
+
+84.echo -e "apiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod-resources\nspec:\n  containers:\n  - name: nginx-container\n    image: nginx:latest\n    resources:\n      requests:\n        memory: \"256Mi\"\n        cpu: \"100m\"\n      limits:\n        memory: \"512Mi\"\n        cpu: \"200m\"" > nginx-pod-resources.yaml
+
+Gamme de limites
+
+85.echo -e "apiVersion: v1\nkind: Namespace\nmetadata:\n  name: limitrange\n\n---\n\napiVersion: v1\nkind: LimitRange\nmetadata:\n  name: mem-limitrange\n  namespace: limitrange\nspec:\n  limits:\n  - type: Container\n    default:\n      memory: 200Mi\n    defaultRequest:\n      memory: 100Mi\n    max:\n      memory: 500Mi\n    min:\n      memory: 100Mi" > limitrange-namespace.yaml
+
+86.kubectl describe namespace limitrange
+
+87.echo -e "apiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod-limitrange\n  namespace: limitrange\nspec:\n  containers:\n  - name: nginx-container\n    image: nginx:latest\n    resources:\n      requests:\n        memory: \"150Mi\"" > nginx-pod-limitrange.yaml
+
+Quotas de ressources
+
+88.echo -e "apiVersion: v1\nkind: Namespace\nmetadata:\n  name: namespace1" > namespace1.yaml
+
+89.echo -e "apiVersion: v1\nkind: Namespace\nmetadata:\n  name: one" > one-namespace.yaml
+
+90.echo -e "apiVersion: v1\nkind: Pod\nmetadata:\n  name: sample-pod\n  namespace: un\nspec:\n  containers:\n  - name: nginx-container\n    image: nginx:latest\n    resources:\n      requests:\n        memory: \"1Gi\"\n        cpu: \"0.5\"\n      limits:\n        memory: \"2Gi\"\n        cpu: \"1\"" > sample-pod-un.yaml
+
+kubectl apply -f sample-pod-un.yaml
+
+
+Secrets
+
+91.
+
+92.
+
+93.
+
+94.
+
+95.
+
+96.
+
+97.
+
+98.
+
+99.
+
+100.
+
+101.
+
+102
+
+103.
+
+104
+
+105.
+
+106.
+
+107.
+
+108.
+
+109.
+
+110.
+
+111.
+
+112.
+
+113.
+
+114.
+
