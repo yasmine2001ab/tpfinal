@@ -285,51 +285,65 @@ kubectl apply -f sample-pod-un.yaml
 
 Secrets
 
-91.
+91.kubectl create secret generic mysecret --from-literal=password=mypas
 
-92.
+92.creer le fichier secret.txt qui contient
+   username=mysecret1
+   password=mypass1
+   
+   -kubectl create secret generic mysecret2 --from-file=secret.txt
 
-93.
+93.echo -n admin > username
 
-94.
+94.kubectl get secret mysecret2
 
-95.
+95.kubectl run nginx-pod-secret --image=nginx --restart=Never --dry-run=client -o yaml --command -- sleep infinity |
+  sed '/spec:/a\  volumes:\n  - name: secret-volume\n    secret:\n      secretName: mysecret2\n  containers:\n    - name: nginx-container\n      volumeMounts:\n      - name: secret-volume\n        mountPath: /etc/foo' > nginx-pod-secret.yaml
+  kubectl apply -f nginx-pod-secret.yaml
 
-96.
+96.kubectl delete pod nginx-pod-secret
+   kubectl run nginx-pod-username --image=nginx --restart=Never --dry-run=client -o yaml --command |
+  sed '/spec:/a\  containers:\n    - name: nginx-container\n      env:\n      - name: USERNAME\n        valueFrom:\n          secretKeyRef:\n            name: mysecret2\n            key: username' > nginx-pod-username.yaml
+   
+  kubectl apply -f nginx-pod-username.yaml
 
-97.
+97.kubectl create namespace secret-ops
+   kubectl create secret generic ext-service-secret --namespace=secret-ops --from-literal=API_KEY=LmLHbYhsgWZwNifiqaRorH8T
+ 
+98.kubectl run consumer --image=nginx --namespace=secret-ops --restart=Never --dry-run=client -o yaml --command -- sleep infinity |
+   sed '/spec:/a\  containers:\n    - name: nginx-container\n      envFrom:\n      - secretRef:\n          name: ext-service-secret' > consumer-pod.yaml 
+   kubectl apply -f consumer-pod.yaml
+   kubectl exec -it consumer --namespace=secret-ops -- /bin/sh
+   printenv
 
-98.
 
-99.
+99.kubectl create secret generic my-secret --namespace=secret-ops --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=id_rsa
 
-100.
+100.kubectl run consumer --image=nginx --namespace=secret-ops --restart=Never --dry-run=client -o yaml --command |
+  sed '/spec:/a\  containers:\n    - name: nginx-container\n      volumeMounts:\n      - name: secret-volume\n        mountPath: /var/app\n        readOnly: true' |
+  sed '/spec:/a\  volumes:\n  - name: secret-volume\n    secret:\n      secretName: my-secret' > consumer-pod-secret-volume.yaml
 
-101.
+  kubectl apply -f consumer-pod-secret-volume.yaml
+  kubectl exec -it consumer --namespace=secret-ops -- /bin/sh
+  
+Sercive Accounts
 
-102
+101.kubectl get serviceaccounts --all-namespaces
 
-103.
+102.kubectl create serviceaccount myuser
 
-104
+103. nginx-pod.yml
+     apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  serviceAccountName: myuser
+  containers:
+  - name: nginx-container
+    image: nginx:latest
 
-105.
+kubectl apply -f nginx-pod.yml
 
-106.
-
-107.
-
-108.
-
-109.
-
-110.
-
-111.
-
-112.
-
-113.
-
-114.
+104.kubectl create jeton myuser-clusterrole --clusterrole=cluster-admin --serviceaccount=default:myuser
 
